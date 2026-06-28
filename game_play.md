@@ -2,6 +2,8 @@
 
 A client-side simulation. No API keys, no real LLM calls. You tune a virtual LangGraph routing agent and chase the highest **run score**.
 
+**Live demo:** https://jcpopdigitalpartners.github.io/semantic-routing-lab/
+
 ---
 
 ## Goal
@@ -15,18 +17,48 @@ There is no cheat sheet — you discover what works by experimenting.
 ## How to start
 
 1. Open the app and click **Play** on the Hub.
-2. You land in the **Efficiency Challenge** lab (three columns: input · graph · scoreboard).
+2. You land in the **Efficiency Challenge** lab (three columns: **input · graph · scoreboard**).
+3. On your **first visit**, a **7-step guided tour** starts automatically — spotlight overlays walk you through every major area. Click **Next** through each step, or **Skip tour** / **Start playing** when ready.
+4. Anytime later, click **Guide** in the lab header to replay the tour.
+
+---
+
+## In-app guided tour (7 steps)
+
+The tour highlights each zone in order. Follow along on first launch:
+
+| Step | Area | What you learn |
+|------|------|----------------|
+| 1 | **Request inbox** | Pick a sample — drives score factor ① |
+| 2 | **Model roster** | Assign LLMs per route — factor ② fit % |
+| 3 | **Code editor** | `router_agent.py` LangGraph blueprint (read-only simulation) |
+| 4 | **Route request** | Run the simulated agent |
+| 5 | **StateGraph** | Live node graph — active node, branch taken, skipped paths |
+| 6 | **Pipeline overview** | Carousel: intro slides pre-run, synced node slides post-run |
+| 7 | **Score panel** | Formula ① + ② + ③ − ④ and tier progress |
+
+Tour completion is saved in your browser. To see it again: **Guide** button, or clear `semantic-routing-lab-guidance-v3` from site localStorage.
 
 ---
 
 ## The game loop
 
 ```
-Pick a request  →  Assign models  →  Route request  →  Read score  →  Swap & retry
-      ①                    ②              (graph)           ①–④
+Pick a request → Assign models → (read code) → Route request → Follow graph → Read score → Swap & retry
+      ①               ②                          ⑤–⑥              ①–④
 ```
 
 Repeat until you beat your **best run score** and clear the side challenges.
+
+---
+
+## Lab layout
+
+| Column | Contents |
+|--------|----------|
+| **Left** | Request inbox → Model roster → Code editor |
+| **Middle** | StateGraph (top) · Pipeline overview carousel (bottom) |
+| **Right** | Score formula · tiers · challenges · Efficiency Observatory |
 
 ---
 
@@ -75,14 +107,14 @@ Assign one LLM per route from the dropdowns.
 
 ### 3. Code editor (`router_agent.py`)
 
-**What it is:** a readable **blueprint** of a real LangGraph routing agent in Python — state, embedding, router, conditional edges, and `ROUTE_MODELS`.
+**What it is:** a readable **blueprint** of a real LangGraph routing agent in Python — `RouterState`, embedding, `semantic_router`, conditional edges, and `ROUTE_MODELS`.
 
 **What it is not:** executable code in this lab. Nothing runs on a server; the simulator drives results from your **request + roster**, not from Python execution.
 
 **What it does:**
 - **Gates runs** — **Route request** requires `StateGraph`, `embed_semantic`, `semantic_router`, and `add_conditional_edges` to still be present.
 - **Syncs with roster** — when you change dropdowns, the `ROUTE_MODELS = { ... }` block updates automatically.
-- **Teaches LangGraph** — the graph carousel code hints map each node to this file.
+- **Teaches LangGraph** — pipeline carousel code hints and graph node labels map back to this file.
 
 **To win the game:** focus on inbox + roster. You can leave the starter code unchanged.
 
@@ -90,11 +122,38 @@ Assign one LLM per route from the dropdowns.
 
 ### 4. Route request
 
-Click **Route request** in the header.
+Click **Route request** in the header (step 4 of the guided tour).
 
-Watch the **StateGraph** animate: ingest → embed → route → **one** LLM branch → metrics. Use the **overview carousel** below the graph to step through nodes.
+The simulation runs using your inbox pick and roster assignments. After a run, hover **Routed to LLM** in the editor toolbar for a quick result summary and numbered score breakdown.
 
-Hover **Routed to LLM** in the editor toolbar after a run for a quick result summary and numbered score lines.
+---
+
+## Middle column — graph & pipeline
+
+### 5. StateGraph
+
+The top of the middle column is the **live LangGraph visualization**.
+
+During a run:
+- The **active node** pulses with a cyan highlight (`▶ HERE`).
+- **Completed nodes** along the taken path stay lit.
+- The **chosen LLM branch** is highlighted; the other two LLM nodes fade as *skipped*.
+- The **legend** lists your current roster assignment per route.
+
+Use this to see *where* in the pipeline you are — not just *what* scored.
+
+---
+
+### 6. Pipeline overview
+
+The carousel below the graph explains *what each step does*.
+
+| Mode | When | What you see |
+|------|------|----------------|
+| **Pipeline overview** | Before first run | Intro slides: pre-routing chain → conditional branch → metrics exit |
+| **Node overview** | After a run | Slides synced to the graph — step through nodes, read RouterState deltas |
+
+Use **◀ ▶** or the dot timeline to navigate. After a run, clicking a slide jumps the graph to that step.
 
 ---
 
@@ -131,7 +190,7 @@ After each run, the **Score formula** panel shows how many points you earned fro
 
 ### Efficiency Observatory
 
-Session-level dashboard: routing rings, accuracy, latency, cost, and per-LLM efficiency bars. Use it to compare models across many runs; use the **Score formula** panel for per-run breakdown.
+Session-level dashboard below the score panel: routing rings, accuracy, latency, cost, and per-LLM efficiency bars. Use it to compare models across many runs; use the **Score formula** panel for per-run breakdown.
 
 ---
 
@@ -150,11 +209,13 @@ There is no single winning roster — different requests reward different assign
 
 ## First session (~5 minutes)
 
-1. Run **Vendor Contract PDF** with the default roster. Note a mediocre score (weak PDF fit).
-2. Assign **Claude 3.5 Sonnet**, **Docling**, or **Qwen2-VL** to the **PDF** route. Run again — watch ② rise.
-3. Run **Q4 Sales Spreadsheet**. Put **GPT-4o** or **TableTransformer** on the **spreadsheet** route.
-4. Run **Unstructured Prompt**. Keep a cheap model on the **unstructured** route.
-5. Check the formula panel after each run. Beat your **best run score**.
+1. Complete or skim the **guided tour** (or click **Guide** if you dismissed it).
+2. Run **Vendor Contract PDF** with the default roster. Note a mediocre score (weak PDF fit).
+3. Assign **Claude 3.5 Sonnet**, **Docling**, or **Qwen2-VL** to the **PDF** route. Run again — watch ② rise.
+4. Run **Q4 Sales Spreadsheet**. Put **GPT-4o** or **TableTransformer** on the **spreadsheet** route.
+5. Run **Unstructured Prompt**. Keep a cheap model on the **unstructured** route.
+6. Step through the **Pipeline overview** after a run to see RouterState at each node.
+7. Check the formula panel after each run. Beat your **best run score**.
 
 ---
 
@@ -166,7 +227,7 @@ When you click **Route request**, the lab:
 2. Picks the winning route and the model **you assigned** to that route.
 3. Computes quality from model–route affinity, latency and cost from model profiles, then applies the game formula above.
 
-The graph visualization and step carousel reflect that simulated path — they mirror how a real LangGraph agent would flow, without calling external APIs.
+The StateGraph and pipeline carousel reflect that simulated path — they mirror how a real LangGraph agent would flow, without calling external APIs.
 
 ---
 
@@ -174,10 +235,13 @@ The graph visualization and step carousel reflect that simulated path — they m
 
 | I want to… | Do this |
 |------------|---------|
+| See where to start | **Guide** in the lab header (7-step tour) |
 | Raise ① | Pick samples that match their type; routing is automatic once the input is clear |
 | Raise ② | Match multimodal/strong models to PDF; tabular models to spreadsheet |
 | Raise ③ | Prefer faster models when fit is already good enough |
 | Limit ④ | Avoid oversized models when a smaller one fits |
+| Understand the pipeline | Read **Pipeline overview** carousel (middle column, bottom) |
+| Understand the code | Read `router_agent.py` — blueprint only, synced to your roster |
 | Try a new model | HF pull field, or pick from the catalog (👁 = multimodal) |
 | Reset progress | **Reset scores** in the lab header |
 | Go back to overview | **Hub** in the lab header |
@@ -190,4 +254,17 @@ The Hub shows tier targets, route types (you choose the models), and a preview o
 
 **Pick a request → Assign models → Route & read score → Swap & retry**
 
-That matches the left column top-to-bottom: **Request inbox → Model roster → Code → Run**.
+Full lab order (matches the guided tour):
+
+**Inbox → Roster → Code → Run → StateGraph → Pipeline overview → Score**
+
+---
+
+## Deploy locally
+
+```bash
+npm install
+npm run dev
+```
+
+Push to `main` on GitHub to redeploy Pages automatically (see README).

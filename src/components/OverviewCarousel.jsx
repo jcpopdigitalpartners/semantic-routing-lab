@@ -54,7 +54,7 @@ export default function OverviewCarousel({
   }
 
   return (
-    <div className="overview-carousel">
+    <div className="overview-carousel" data-guide="pipeline">
       <div className="overview-carousel-head">
         <span className="overview-carousel-label">{label}</span>
         <span className="overview-carousel-count">

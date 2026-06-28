@@ -70,7 +70,7 @@ export default function LangGraphCanvas({
   const resolvedBranch = branchTaken ?? llmFromRoute;
 
   return (
-    <div className="graph-canvas">
+    <div className="graph-canvas" data-guide="graph">
       <div className="graph-canvas-head">
         <span>StateGraph</span>
         <span className={`graph-status ${running ? "live" : ""}`}>

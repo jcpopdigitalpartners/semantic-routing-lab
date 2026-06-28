@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Play, RotateCcw, Sparkles } from "lucide-react";
+import { ArrowLeft, CircleHelp, Play, RotateCcw, Sparkles } from "lucide-react";
 import { DEFAULT_ROSTER, MODEL_CATALOG } from "../data/models.js";
 import { STARTER_CODE } from "../data/config.js";
+import { isGuidanceDone } from "../data/labGuideSteps.js";
 import { SAMPLE_INPUTS, getSample } from "../data/samples.js";
 import {
   buildLangGraphSteps,
@@ -20,6 +21,7 @@ import RouteResultHover from "./RouteResultHover";
 import ModelRoster from "./ModelRoster";
 import EfficiencyDashboard from "./EfficiencyDashboard";
 import EfficiencyGame from "./EfficiencyGame";
+import LabGuidance from "./LabGuidance";
 
 export default function RoutingLab({
   metricsStore,
@@ -43,6 +45,13 @@ export default function RoutingLab({
   const [pullMessage, setPullMessage] = useState(null);
   const [lastRunScore, setLastRunScore] = useState(null);
   const [lastRunBreakdown, setLastRunBreakdown] = useState(null);
+  const [guideOpen, setGuideOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isGuidanceDone()) {
+      setGuideOpen(true);
+    }
+  }, []);
 
   const rosterProfiles = useMemo(
     () => buildRosterProfiles(registry, roster),
@@ -154,6 +163,8 @@ export default function RoutingLab({
 
   return (
     <div className="routing-lab">
+      <LabGuidance open={guideOpen} onClose={() => setGuideOpen(false)} />
+
       <header className="lab-header">
         <button type="button" className="back-btn" onClick={onBack}>
           <ArrowLeft size={16} />
@@ -164,10 +175,25 @@ export default function RoutingLab({
           <strong>Efficiency Challenge</strong>
         </div>
         <div className="lab-header-actions">
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm lab-guide-btn"
+            onClick={() => setGuideOpen(true)}
+            aria-label="Show guided tour"
+          >
+            <CircleHelp size={14} />
+            Guide
+          </button>
           <button type="button" className="btn btn-ghost" onClick={onResetMetrics}>
             Reset scores
           </button>
-          <button type="button" className="btn btn-primary" onClick={handleRun} disabled={running}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            data-guide="run"
+            onClick={handleRun}
+            disabled={running}
+          >
             <Play size={14} />
             {running ? "Running..." : "Route request"}
           </button>
@@ -177,22 +203,26 @@ export default function RoutingLab({
       <div className="lab-grid">
         <div className="lab-col lab-col-input">
           <div className="lab-col-scroll">
-            <InputDock
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-              customPrompt={customPrompt}
-              onCustomPromptChange={setCustomPrompt}
-            />
+            <div data-guide="inbox">
+              <InputDock
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+                customPrompt={customPrompt}
+                onCustomPromptChange={setCustomPrompt}
+              />
+            </div>
 
-            <ModelRoster
-              registry={registry}
-              roster={roster}
-              onRosterChange={handleRosterChange}
-              onPullHf={handlePullHf}
-              pullMessage={pullMessage}
-            />
+            <div data-guide="roster">
+              <ModelRoster
+                registry={registry}
+                roster={roster}
+                onRosterChange={handleRosterChange}
+                onPullHf={handlePullHf}
+                pullMessage={pullMessage}
+              />
+            </div>
 
-            <div className="editor-block">
+            <div className="editor-block" data-guide="code">
               <div className="editor-block-head">
                 <span>router_agent.py</span>
                 <div className="editor-block-actions">
@@ -231,7 +261,7 @@ export default function RoutingLab({
         </div>
 
         <div className="lab-col lab-col-dash">
-          <div className="lab-col-scroll">
+          <div className="lab-col-scroll" data-guide="score">
             <EfficiencyGame game={game} lastRunScore={lastRunScore} lastRunBreakdown={lastRunBreakdown} />
             <EfficiencyDashboard metrics={metrics} />
           </div>
