@@ -1,0 +1,66 @@
+export const SAMPLE_INPUTS = [
+  {
+    id: "contract-pdf",
+    label: "Vendor Contract PDF",
+    kind: "pdf",
+    icon: "FileText",
+    filename: "vendor_agreement_2024.pdf",
+    mimeType: "application/pdf",
+    prompt: "Extract payment terms, renewal clauses, and liability caps from this contract.",
+    preview: "VENDOR AGREEMENT · Page 1 of 42 · Section 4.2 Payment Terms: Net-30...",
+  },
+  {
+    id: "sales-csv",
+    label: "Q4 Sales Spreadsheet",
+    kind: "spreadsheet",
+    icon: "Table2",
+    filename: "q4_sales_forecast.xlsx",
+    mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    prompt: "Which product lines missed forecast by more than 15%? Show pivot by region.",
+    preview: "region,product,revenue,forecast,delta\nNA,Widget-A,1200000,1400000,-14.3%...",
+  },
+  {
+    id: "brainstorm",
+    label: "Unstructured Prompt",
+    kind: "unstructured",
+    icon: "MessageSquare",
+    filename: null,
+    mimeType: "text/plain",
+    prompt: "Brainstorm 5 onboarding email subject lines for a developer tools SaaS.",
+    preview: "Brainstorm 5 onboarding email subject lines for a developer tools SaaS.",
+  },
+  {
+    id: "invoice-pdf",
+    label: "Invoice Scan",
+    kind: "pdf",
+    icon: "FileText",
+    filename: "invoice_march_scan.pdf",
+    mimeType: "application/pdf",
+    prompt: "OCR this invoice and list line items with totals in a table.",
+    preview: "INVOICE #INV-8842 · Due Date: 2024-03-15 · Line items: Consulting $4,200...",
+  },
+  {
+    id: "budget-csv",
+    label: "Budget CSV",
+    kind: "spreadsheet",
+    icon: "Table2",
+    filename: "department_budget.csv",
+    mimeType: "text/csv",
+    prompt: "Write a SUMIF formula to total marketing spend where department='Growth'.",
+    preview: "department,category,amount,month\nMarketing,Ads,45000,Jan\nGrowth,Ads,12000,Jan...",
+  },
+  {
+    id: "explain-api",
+    label: "General Q&A",
+    kind: "unstructured",
+    icon: "MessageSquare",
+    filename: null,
+    mimeType: "text/plain",
+    prompt: "Explain webhooks vs polling to a junior engineer in 3 bullet points.",
+    preview: "Explain webhooks vs polling to a junior engineer in 3 bullet points.",
+  },
+];
+
+export function getSample(id) {
+  return SAMPLE_INPUTS.find((s) => s.id === id);
+}
