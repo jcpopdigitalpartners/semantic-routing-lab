@@ -2153,6 +2153,10 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   box-shadow: var(--shadow), 0 0 32px rgba(124, 58, 237, 0.2);
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .lab-guidance-card-head {

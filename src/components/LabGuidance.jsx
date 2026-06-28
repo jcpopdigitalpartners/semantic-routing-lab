@@ -1,10 +1,14 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronRight, X } from "lucide-react";
 import {
   LAB_GUIDE_STEPS,
   markGuidanceDone,
 } from "../data/labGuideSteps.js";
+
+const VIEWPORT_MARGIN = 12;
+const CARD_GAP = 12;
+const CARD_MAX_WIDTH = 320;
 
 /** Scroll container for each guide target (column or page region). */
 const SCROLL_CONTAINER = {
@@ -33,7 +37,6 @@ function focusGuideTarget(targetKey) {
   const el = document.querySelector(`[data-guide="${targetKey}"]`);
   if (!el) return null;
 
-  // Stacked/mobile: bring the whole column into the viewport first.
   el.closest(".lab-col")?.scrollIntoView({
     block: "nearest",
     inline: "center",
@@ -54,6 +57,42 @@ function focusGuideTarget(targetKey) {
   }
 
   return el;
+}
+
+function computeCardPosition(rect, cardWidth, cardHeight) {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const maxW = Math.min(CARD_MAX_WIDTH, vw - VIEWPORT_MARGIN * 2);
+  const w = Math.min(cardWidth || maxW, maxW);
+  const h = cardHeight || 240;
+
+  if (!rect) {
+    return {
+      top: Math.max(VIEWPORT_MARGIN, (vh - h) / 2),
+      left: Math.max(VIEWPORT_MARGIN, (vw - w) / 2),
+      width: w,
+    };
+  }
+
+  const spaceBelow = vh - VIEWPORT_MARGIN - (rect.top + rect.height + CARD_GAP);
+  const spaceAbove = rect.top - CARD_GAP - VIEWPORT_MARGIN;
+
+  let top;
+  if (spaceBelow >= h) {
+    top = rect.top + rect.height + CARD_GAP;
+  } else if (spaceAbove >= h) {
+    top = rect.top - CARD_GAP - h;
+  } else {
+    // Not enough room beside target — dock inside viewport, prefer lower half
+    top = Math.max(VIEWPORT_MARGIN, vh - h - VIEWPORT_MARGIN);
+  }
+
+  let left = rect.left + rect.width / 2 - w / 2;
+  left = Math.max(VIEWPORT_MARGIN, Math.min(left, vw - w - VIEWPORT_MARGIN));
+
+  top = Math.max(VIEWPORT_MARGIN, Math.min(top, vh - h - VIEWPORT_MARGIN));
+
+  return { top, left, width: w };
 }
 
 function useTargetRect(targetKey, stepIndex, active) {
@@ -104,35 +143,32 @@ function useTargetRect(targetKey, stepIndex, active) {
   return rect;
 }
 
-function tooltipStyle(rect) {
-  if (!rect) {
-    return {
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      maxWidth: "min(360px, 92vw)",
-    };
-  }
+function useCardPosition(rect, stepId) {
+  const cardRef = useRef(null);
+  const [position, setPosition] = useState({ top: VIEWPORT_MARGIN, left: VIEWPORT_MARGIN, width: CARD_MAX_WIDTH });
+  const [ready, setReady] = useState(false);
 
-  const cardW = 320;
-  const gap = 16;
-  const spaceBelow = window.innerHeight - (rect.top + rect.height);
-  const placeBelow = spaceBelow >= 180 || rect.top < window.innerHeight / 2;
+  const reposition = useCallback(() => {
+    const card = cardRef.current;
+    if (!card) return;
+    const { width, height } = card.getBoundingClientRect();
+    setPosition(computeCardPosition(rect, width, height));
+    setReady(true);
+  }, [rect]);
 
-  let top = placeBelow ? rect.top + rect.height + gap : rect.top - gap;
-  let left = rect.left + rect.width / 2 - cardW / 2;
-  left = Math.max(12, Math.min(left, window.innerWidth - cardW - 12));
+  useLayoutEffect(() => {
+    setReady(false);
+    reposition();
+    const t = window.setTimeout(reposition, 50);
+    return () => window.clearTimeout(t);
+  }, [reposition, stepId, rect]);
 
-  if (!placeBelow) {
-    top = rect.top - gap;
-  }
+  useEffect(() => {
+    window.addEventListener("resize", reposition);
+    return () => window.removeEventListener("resize", reposition);
+  }, [reposition]);
 
-  return {
-    top,
-    left,
-    maxWidth: cardW,
-    transform: placeBelow ? "none" : "translateY(-100%)",
-  };
+  return { cardRef, position, ready };
 }
 
 export default function LabGuidance({ open, onClose }) {
@@ -140,6 +176,7 @@ export default function LabGuidance({ open, onClose }) {
   const step = LAB_GUIDE_STEPS[index];
   const isLast = index >= LAB_GUIDE_STEPS.length - 1;
   const rect = useTargetRect(step?.target, index, open);
+  const { cardRef, position, ready } = useCardPosition(rect, step?.id);
 
   useEffect(() => {
     if (open) setIndex(0);
@@ -188,11 +225,17 @@ export default function LabGuidance({ open, onClose }) {
         ) : null}
 
         <motion.div
+          ref={cardRef}
           className="lab-guidance-card"
           key={step.id}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={tooltipStyle(rect)}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 8 }}
+          style={{
+            top: position.top,
+            left: position.left,
+            width: position.width,
+            maxWidth: `min(${CARD_MAX_WIDTH}px, calc(100vw - ${VIEWPORT_MARGIN * 2}px))`,
+          }}
         >
           <div className="lab-guidance-card-head">
             <span className="lab-guidance-step">
