@@ -177,7 +177,7 @@ export default function RoutingLab({
         <div className="lab-header-actions">
           <button
             type="button"
-            className="btn btn-ghost btn-sm lab-guide-btn"
+            className={`btn btn-ghost btn-sm lab-guide-btn${guideOpen ? "" : " lab-guide-btn-pulse"}`}
             onClick={() => setGuideOpen(true)}
             aria-label="Show guided tour"
           >

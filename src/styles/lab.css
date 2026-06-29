@@ -2249,6 +2249,28 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   color: var(--cyan);
 }
 
+.lab-guide-btn-pulse {
+  border-color: rgba(34, 211, 238, 0.4);
+  animation: guide-btn-pulse 2.2s ease-in-out infinite;
+}
+
+.lab-guide-btn-pulse:hover {
+  animation: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 16px rgba(34, 211, 238, 0.25);
+}
+
+@keyframes guide-btn-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.35);
+    border-color: rgba(34, 211, 238, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(34, 211, 238, 0);
+    border-color: rgba(34, 211, 238, 0.75);
+  }
+}
+
 /* Responsive — allow page scroll only on narrow screens */
 @media (max-width: 1100px) {
   html, body, #root {
